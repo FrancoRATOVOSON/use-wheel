@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "jsx": "react",
+    "module": "commonjs",
+    "target": "ES2015",
+    "lib": ["ESNext", "dom"],
+    "strict": true,
+    "esModuleInterop": true
+  },
+  "include": ["example","packages/*"],
+  "exclude": ["node_modules"]
+}
