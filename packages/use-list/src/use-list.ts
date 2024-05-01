@@ -12,7 +12,7 @@ export function useList<T, U>(
   { defaultPageSize, filterFn, getId, sortFn }: UseListOptions<T, U>
 ) {
   const [selection, setSelection] = React.useState<Set<U>>(new Set([]))
-  const [pageSize, setPageSize] = React.useState<number>(defaultPageSize)
+  const [pageSize, setPageSizeState] = React.useState<number>(defaultPageSize)
   const [index, setIndex] = React.useState<number>(0)
 
   const toogleSelection = React.useCallback(
@@ -51,15 +51,18 @@ export function useList<T, U>(
 
   const lastPage = React.useCallback(() => {
     if (pageSize < data.length && index + pageSize < data.length)
-      setIndex(pageSize * pageCount)
+      setIndex(pageSize * (pageCount - 1))
   }, [data.length, index, pageCount, pageSize])
 
   const goToPage = React.useCallback(
     (destinationPage: number) => {
-      if (destinationPage < pageCount) setIndex(pageSize * destinationPage)
+      if (destinationPage < pageCount)
+        setIndex(pageSize * (destinationPage - 1))
     },
     [pageCount, pageSize]
   )
+
+  const setPageSize = React.useCallback((size: number) => {}, [])
 
   return {
     currentPage,
