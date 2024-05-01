@@ -32,6 +32,11 @@ export function useList<T, U>(
     [index, pageSize]
   )
 
+  const pageCount = React.useMemo(() => {
+    if (pageSize >= data.length) return 1
+    return Math.ceil(data.length / pageSize)
+  }, [data.length, pageSize])
+
   const nextPage = React.useCallback(() => {
     if (pageSize < data.length && index + pageSize < data.length)
       setIndex(currentIndex => currentIndex + pageSize)
@@ -45,11 +50,9 @@ export function useList<T, U>(
   const firstPage = React.useCallback(() => setIndex(0), [])
 
   const lastPage = React.useCallback(() => {
-    if (pageSize < data.length && index + pageSize < data.length) {
-      const pageCount = Math.ceil(data.length / pageSize)
+    if (pageSize < data.length && index + pageSize < data.length)
       setIndex(pageSize * pageCount)
-    }
-  }, [data.length, index, pageSize])
+  }, [data.length, index, pageCount, pageSize])
 
   return {
     currentPage,
@@ -60,6 +63,7 @@ export function useList<T, U>(
       .sort(sortFn)
       .slice(index, index + pageSize),
     nextPage,
+    pageCount,
     pageSize,
     previousPage,
     selection,
