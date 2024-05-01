@@ -42,8 +42,19 @@ export function useList<T, U>(
       setIndex(currentIndex => currentIndex - pageSize)
   }, [data.length, index, pageSize])
 
+  const firstPage = React.useCallback(() => setIndex(0), [])
+
+  const lastPage = React.useCallback(() => {
+    if (pageSize < data.length && index + pageSize < data.length) {
+      const pageCount = Math.ceil(data.length / pageSize)
+      setIndex(pageSize * pageCount)
+    }
+  }, [data.length, index, pageSize])
+
   return {
     currentPage,
+    firstPage,
+    lastPage,
     list: data
       .filter(filterFn)
       .sort(sortFn)
