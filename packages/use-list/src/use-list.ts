@@ -62,7 +62,14 @@ export function useList<T, U>(
     [pageCount, pageSize]
   )
 
-  const setPageSize = React.useCallback((size: number) => {}, [])
+  const setPageSize = React.useCallback(
+    (size: number) => {
+      setPageSizeState(size)
+      const newIndex = Math.floor(index / size) * size
+      setIndex(newIndex)
+    },
+    [index]
+  )
 
   return {
     currentPage,
