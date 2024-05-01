@@ -27,7 +27,13 @@ export function useList<T, U>(
     [getId]
   )
 
+  const currentPage = React.useMemo(() => {
+    if (index === 0) return 1
+    return index / pageSize + 1
+  }, [index, pageSize])
+
   return {
+    currentPage,
     list: data
       .filter(filterFn)
       .sort(sortFn)
