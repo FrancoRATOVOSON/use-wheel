@@ -1,10 +1,15 @@
 import React from 'react'
 
 type UseListOptions<T, U> = {
+  filterFn: (element: T) => boolean
   getId: (element: T) => U
+  sortFn: (elementA: T, elementB: T) => number
 }
 
-export function useList<T, U>(data: Array<T>, { getId }: UseListOptions<T, U>) {
+export function useList<T, U>(
+  data: Array<T>,
+  { filterFn, getId, sortFn }: UseListOptions<T, U>
+) {
   const [selection, setSelection] = React.useState<Set<U>>(new Set([]))
 
   const toogleSelection = React.useCallback(
@@ -20,10 +25,7 @@ export function useList<T, U>(data: Array<T>, { getId }: UseListOptions<T, U>) {
   )
 
   return {
-    list: data
-      .filter(() => true)
-      .sort(() => 0)
-      .slice(),
+    list: data.filter(filterFn).sort(sortFn).slice(),
     selection,
     toogleSelection
   }
