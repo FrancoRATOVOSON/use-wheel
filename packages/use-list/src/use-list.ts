@@ -1,6 +1,7 @@
 import React from 'react'
 
 type UseListOptions<T, U> = {
+  defaultPageSize: number
   filterFn: (element: T) => boolean
   getId: (element: T) => U
   sortFn: (elementA: T, elementB: T) => number
@@ -8,9 +9,10 @@ type UseListOptions<T, U> = {
 
 export function useList<T, U>(
   data: Array<T>,
-  { filterFn, getId, sortFn }: UseListOptions<T, U>
+  { defaultPageSize, filterFn, getId, sortFn }: UseListOptions<T, U>
 ) {
   const [selection, setSelection] = React.useState<Set<U>>(new Set([]))
+  const [pageSize, setPageSize] = React.useState<number>(defaultPageSize)
 
   const toogleSelection = React.useCallback(
     (item: T, state?: boolean) =>
@@ -26,7 +28,9 @@ export function useList<T, U>(
 
   return {
     list: data.filter(filterFn).sort(sortFn).slice(),
+    pageSize,
     selection,
+    setPageSize,
     toogleSelection
   }
 }
