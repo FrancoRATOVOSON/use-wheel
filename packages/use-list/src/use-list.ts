@@ -37,6 +37,11 @@ export function useList<T, U>(
       setIndex(currentIndex => currentIndex + pageSize)
   }, [data.length, index, pageSize])
 
+  const previousPage = React.useCallback(() => {
+    if (pageSize < data.length && index - pageSize >= 0)
+      setIndex(currentIndex => currentIndex - pageSize)
+  }, [data.length, index, pageSize])
+
   return {
     currentPage,
     list: data
@@ -45,6 +50,7 @@ export function useList<T, U>(
       .slice(index, index + pageSize),
     nextPage,
     pageSize,
+    previousPage,
     selection,
     setPageSize,
     toogleSelection
