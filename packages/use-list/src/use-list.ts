@@ -13,6 +13,7 @@ export function useList<T, U>(
 ) {
   const [selection, setSelection] = React.useState<Set<U>>(new Set([]))
   const [pageSize, setPageSize] = React.useState<number>(defaultPageSize)
+  const [index, setIndex] = React.useState<number>(0)
 
   const toogleSelection = React.useCallback(
     (item: T, state?: boolean) =>
@@ -27,7 +28,10 @@ export function useList<T, U>(
   )
 
   return {
-    list: data.filter(filterFn).sort(sortFn).slice(),
+    list: data
+      .filter(filterFn)
+      .sort(sortFn)
+      .slice(index, index + pageSize),
     pageSize,
     selection,
     setPageSize,
