@@ -32,12 +32,18 @@ export function useList<T, U>(
     [index, pageSize]
   )
 
+  const nextPage = React.useCallback(() => {
+    if (pageSize < data.length && index + pageSize < data.length)
+      setIndex(currentIndex => currentIndex + pageSize)
+  }, [data.length, index, pageSize])
+
   return {
     currentPage,
     list: data
       .filter(filterFn)
       .sort(sortFn)
       .slice(index, index + pageSize),
+    nextPage,
     pageSize,
     selection,
     setPageSize,
