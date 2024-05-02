@@ -71,6 +71,18 @@ export function useList<T, U>(
     [index]
   )
 
+  const toogleSelectionAll = React.useCallback(
+    (state?: boolean) =>
+      setSelection(currentSelection => {
+        if (state || currentSelection.size === 0)
+          return new Set(data.map(item => getId(item)))
+        const selectionList = new Set(currentSelection)
+        selectionList.clear()
+        return selectionList
+      }),
+    [data, getId]
+  )
+
   return {
     currentPage,
     firstPage,
@@ -86,6 +98,7 @@ export function useList<T, U>(
     previousPage,
     selection,
     setPageSize,
-    toogleSelection
+    toogleSelection,
+    toogleSelectionAll
   }
 }
