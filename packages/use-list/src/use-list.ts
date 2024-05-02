@@ -19,12 +19,25 @@ export function useList<T, U>(data: Array<T>, { getId }: UseListOptions<T, U>) {
     [getId]
   )
 
+  const toogleSelectionAll = React.useCallback(
+    (state?: boolean) =>
+      setSelection(currentSelection => {
+        if (state || currentSelection.size === 0)
+          return new Set(data.map(item => getId(item)))
+        const selectionList = new Set(currentSelection)
+        selectionList.clear()
+        return selectionList
+      }),
+    [data, getId]
+  )
+
   return {
     list: data
       .filter(() => true)
       .sort(() => 0)
       .slice(),
     selection,
-    toogleSelection
+    toogleSelection,
+    toogleSelectionAll
   }
 }
