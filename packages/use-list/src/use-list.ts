@@ -1,4 +1,5 @@
-import React from 'react'
+import { useListPagination } from './pagination'
+import { useListSelection } from './selection'
 
 type UseListOptions<T, U> = {
   defaultPageSize: number
@@ -8,97 +9,20 @@ type UseListOptions<T, U> = {
 }
 
 export function useList<T, U>(
-  data: Array<T>,
+  dataList: Array<T>,
   { defaultPageSize, filterFn, getId, sortFn }: UseListOptions<T, U>
 ) {
-  const [selection, setSelection] = React.useState<Set<U>>(new Set([]))
-  const [pageSize, setPageSizeState] = React.useState<number>(defaultPageSize)
-  const [index, setIndex] = React.useState<number>(0)
-
-  const toogleSelection = React.useCallback(
-    (item: T, state?: boolean) =>
-      setSelection(currentSelection => {
-        const itemId = getId(item)
-        const selectionList = new Set(currentSelection)
-        if (state || !selectionList.has(itemId)) selectionList.add(itemId)
-        else selectionList.delete(itemId)
-        return new Set(selectionList)
-      }),
-    [getId]
-  )
-
-  const currentPage = React.useMemo(
-    () => index / pageSize + 1,
-    [index, pageSize]
-  )
-
-  const pageCount = React.useMemo(() => {
-    if (pageSize >= data.length) return 1
-    return Math.ceil(data.length / pageSize)
-  }, [data.length, pageSize])
-
-  const nextPage = React.useCallback(() => {
-    if (pageSize < data.length && index + pageSize < data.length)
-      setIndex(currentIndex => currentIndex + pageSize)
-  }, [data.length, index, pageSize])
-
-  const previousPage = React.useCallback(() => {
-    if (pageSize < data.length && index - pageSize >= 0)
-      setIndex(currentIndex => currentIndex - pageSize)
-  }, [data.length, index, pageSize])
-
-  const firstPage = React.useCallback(() => setIndex(0), [])
-
-  const lastPage = React.useCallback(() => {
-    if (pageSize < data.length && index + pageSize < data.length)
-      setIndex(pageSize * (pageCount - 1))
-  }, [data.length, index, pageCount, pageSize])
-
-  const goToPage = React.useCallback(
-    (destinationPage: number) => {
-      if (destinationPage < pageCount)
-        setIndex(pageSize * (destinationPage - 1))
-    },
-    [pageCount, pageSize]
-  )
-
-  const setPageSize = React.useCallback(
-    (size: number) => {
-      setPageSizeState(size)
-      const newIndex = Math.floor(index / size) * size
-      setIndex(newIndex)
-    },
-    [index]
-  )
-
-  const toogleSelectionAll = React.useCallback(
-    (state?: boolean) =>
-      setSelection(currentSelection => {
-        if (state || currentSelection.size === 0)
-          return new Set(data.map(item => getId(item)))
-        const selectionList = new Set(currentSelection)
-        selectionList.clear()
-        return selectionList
-      }),
-    [data, getId]
+  const data = dataList.filter(filterFn)
+  const selection = useListSelection(data, getId)
+  const { index, pageSize, ...pagination } = useListPagination(
+    data,
+    defaultPageSize
   )
 
   return {
-    currentPage,
-    firstPage,
-    goToPage,
-    lastPage,
-    list: data
-      .filter(filterFn)
-      .sort(sortFn)
-      .slice(index, index + pageSize),
-    nextPage,
-    pageCount,
+    list: data.sort(sortFn).slice(index, index + pageSize),
     pageSize,
-    previousPage,
-    selection,
-    setPageSize,
-    toogleSelection,
-    toogleSelectionAll
+    ...pagination,
+    ...selection
   }
 }
