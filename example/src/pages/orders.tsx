@@ -12,5 +12,9 @@ export default function OrdersPage() {
     []
   )
 
-  return <OrderList deleteOrders={deleteOrders} list={orders} />
+  return (
+    <div className="p-6">
+      <OrderList deleteOrders={deleteOrders} list={orders} />
+    </div>
+  )
 }

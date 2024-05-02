@@ -36,6 +36,7 @@ module.exports = {
   ],
   root: true,
   rules: {
+    'import/no-named-as-default-member': 'off',
     'perfectionist/sort-enums': [
       'warn',
       {
@@ -73,12 +74,7 @@ module.exports = {
           'object',
           'unknown'
         ],
-        'internal-pattern': [
-          '@components/**',
-          '@database/**',
-          '@app/**',
-          '@lib/**'
-        ],
+        'internal-pattern': ['@/**'],
         'newlines-between': 'always',
         order: 'asc',
         type: 'natural'
