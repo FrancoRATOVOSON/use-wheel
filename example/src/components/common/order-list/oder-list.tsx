@@ -1,3 +1,6 @@
+import React from 'react'
+
+import { DropdownMenuContent } from '@radix-ui/react-dropdown-menu'
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -5,12 +8,25 @@ import {
   DoubleArrowRightIcon
 } from '@radix-ui/react-icons'
 import { format } from 'date-fns'
+import {
+  ArrowDownNarrowWide,
+  ArrowUpDown,
+  ArrowUpNarrowWide,
+  Search
+} from 'lucide-react'
 import { useList } from 'use-list'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
+import {
+  DropdownMenu,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
+import { Input } from '@/components/ui/input'
 import {
   Select,
   SelectContent,
@@ -27,6 +43,8 @@ interface OrderListProps {
 }
 
 export default function OderList({ deleteOrders, list: data }: OrderListProps) {
+  const [search, setSearch] = React.useState<string>('')
+  const [sort, setSort] = React.useState<'asc' | 'desc' | null>(null)
   const {
     currentPage,
     firstPage,
@@ -38,25 +56,77 @@ export default function OderList({ deleteOrders, list: data }: OrderListProps) {
     previousPage,
     selection,
     setPageSize,
-    toogleSelection
+    toogleSelection,
+    toogleSelectionAll
   } = useList(data, {
     defaultPageSize: 5,
-    filterFn: () => true,
+    filterFn: order => {
+      if (search) return order.user.toLowerCase().includes(search.toLowerCase())
+      return true
+    },
     getId: elt => elt.id,
-    sortFn: () => 0
+    sortFn: (a, b) => {
+      if (!sort) return 0
+      if (sort === 'asc') return a.amount - b.amount
+      return b.amount - a.amount
+    }
   })
 
   return (
     <div className="space-y-4">
       <div className="flex justify-between gap-2 items-center">
         <div className="flex justify-start items-center gap-2">
-          {selection.size > 0 && (
-            <Button
-              variant="destructive"
-              onClick={() => deleteOrders(Array.from(selection))}
-            >
-              Delete selected users
-            </Button>
+          <div className="relative ml-auto flex-1 md:grow-0">
+            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <Input
+              className="w-full rounded-lg bg-background pl-9 md:w-[200px] lg:w-[336px]"
+              placeholder="Search..."
+              type="search"
+              onChange={e => setSearch(e.target.value)}
+            />
+          </div>
+          <div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">
+                  {sort === 'asc' ? (
+                    <>
+                      <ArrowUpNarrowWide className="size-4 mr-4" />
+                      Asc
+                    </>
+                  ) : sort === 'desc' ? (
+                    <>
+                      <ArrowDownNarrowWide className="size-4 mr-4" />
+                      Desc
+                    </>
+                  ) : (
+                    <>
+                      <ArrowUpDown className="size-4 mr-4" />
+                      Sort
+                    </>
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-28 h-fit p-2 bg-background border rounded-md mt-2">
+                <DropdownMenuRadioGroup
+                  value={sort || undefined}
+                  onValueChange={value => setSort(value as 'asc' | 'desc')}
+                >
+                  <DropdownMenuRadioItem className="cursor-pointer" value="asc">
+                    Asc
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem
+                    className="cursor-pointer"
+                    value="desc"
+                  >
+                    Desc
+                  </DropdownMenuRadioItem>
+                </DropdownMenuRadioGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+          {search && (
+            <div>{`${data.filter(order => order.user.toLowerCase().includes(search.toLowerCase())).length} results`}</div>
           )}
         </div>
         <div className="flex justify-end gap-2 items-center">
@@ -121,21 +191,33 @@ export default function OderList({ deleteOrders, list: data }: OrderListProps) {
       </div>
       <div className="flex justify-between items-center">
         <div className="flex justify-start items-center gap-4">
-          <div className="flex gap-2 justify-start items-center">
-            <Checkbox
-              checked={selection.size > 0}
-              id="all-users-selection"
-              // onCheckedChange={() => toggleSelectAll()}
-            />
-            <label
-              className="text-muted-foreground cursor-pointer"
-              htmlFor="all-users-selection"
-            >
-              {selection.size > 0 ? `Unselect all` : `Select all`}
-            </label>
+          <div className="flex flex-col gap-0">
+            <div className="flex gap-2 justify-start items-center">
+              <Checkbox
+                checked={selection.size > 0}
+                id="all-users-selection"
+                onCheckedChange={state =>
+                  toogleSelectionAll(typeof state === 'string' ? false : state)
+                }
+              />
+              <label
+                className="text-muted-foreground cursor-pointer"
+                htmlFor="all-users-selection"
+              >
+                {selection.size > 0 ? `Unselect all` : `Select all`}
+              </label>
+            </div>
+            {data && (
+              <p>{`${selection.size} of ${data.length} user(s) selected.`}</p>
+            )}
           </div>
-          {data && (
-            <p>{`${selection.size} of ${data.length} user(s) selected.`}</p>
+          {selection.size > 0 && (
+            <Button
+              variant="destructive"
+              onClick={() => deleteOrders(Array.from(selection))}
+            >
+              Delete selected users
+            </Button>
           )}
         </div>
         <div className={cn('flex justify-start items-center gap-2')}>

@@ -8,7 +8,7 @@ export default function OrdersPage() {
 
   const deleteOrders = React.useCallback(
     (ids: string[]) =>
-      setOrders(list => list.filter(element => ids.includes(element.id))),
+      setOrders(list => list.filter(element => !ids.includes(element.id))),
     []
   )
 
