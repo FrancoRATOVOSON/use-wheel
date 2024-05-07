@@ -14,7 +14,7 @@ import {
   ArrowUpNarrowWide,
   Search
 } from 'lucide-react'
-import { useList } from 'use-list'
+import { useRichList } from 'use-list'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -58,7 +58,7 @@ export default function OderList({ deleteOrders, list: data }: OrderListProps) {
     setPageSize,
     toogleSelection,
     toogleSelectionAll
-  } = useList(data, {
+  } = useRichList<string>()(data, {
     defaultPageSize: 5,
     filterFn: order => {
       if (search) return order.user.toLowerCase().includes(search.toLowerCase())
@@ -129,24 +129,28 @@ export default function OderList({ deleteOrders, list: data }: OrderListProps) {
             <div>{`${data.filter(order => order.user.toLowerCase().includes(search.toLowerCase())).length} results`}</div>
           )}
         </div>
-        <div className="flex justify-end gap-2 items-center">
-          <div className="text-muted-foreground text-nowrap">Rows per page</div>
-          <Select
-            value={`${pageSize}`}
-            onValueChange={value => setPageSize(Number(value))}
-          >
-            <SelectTrigger className="w-16">
-              <SelectValue placeholder={`${pageSize}`} />
-            </SelectTrigger>
-            <SelectContent side="bottom">
-              {[5, 10, 15, 20, 30, 50].map(size => (
-                <SelectItem key={`pageSize-${size}`} value={`${size}`}>
-                  {size}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        {pageSize && setPageSize && (
+          <div className="flex justify-end gap-2 items-center">
+            <div className="text-muted-foreground text-nowrap">
+              Rows per page
+            </div>
+            <Select
+              value={`${pageSize}`}
+              onValueChange={value => setPageSize?.(Number(value))}
+            >
+              <SelectTrigger className="w-16">
+                <SelectValue placeholder={`${pageSize}`} />
+              </SelectTrigger>
+              <SelectContent side="bottom">
+                {[5, 10, 15, 20, 30, 50].map(size => (
+                  <SelectItem key={`pageSize-${size}`} value={`${size}`}>
+                    {size}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
       </div>
       <div className="space-y-4">
         {list.map(order => {
@@ -157,18 +161,20 @@ export default function OderList({ deleteOrders, list: data }: OrderListProps) {
               key={id}
             >
               <div className="flex item-center gap-2">
-                <div className="size-9 grid content-center ml-2">
-                  <Checkbox
-                    checked={selection.has(id)}
-                    id={user}
-                    onCheckedChange={state =>
-                      toogleSelection(
-                        order,
-                        typeof state === 'string' ? false : state
-                      )
-                    }
-                  />
-                </div>
+                {selection && toogleSelection && (
+                  <div className="size-9 grid content-center ml-2">
+                    <Checkbox
+                      checked={selection.has(id)}
+                      id={user}
+                      onCheckedChange={state =>
+                        toogleSelection(
+                          order,
+                          typeof state === 'string' ? false : state
+                        )
+                      }
+                    />
+                  </div>
+                )}
                 <label
                   className={cn(
                     'flex flex-col gap-1',
@@ -190,73 +196,81 @@ export default function OderList({ deleteOrders, list: data }: OrderListProps) {
         })}
       </div>
       <div className="flex justify-between items-center">
-        <div className="flex justify-start items-center gap-4">
-          <div className="flex flex-col gap-0">
-            <div className="flex gap-2 justify-start items-center">
-              <Checkbox
-                checked={selection.size > 0}
-                id="all-users-selection"
-                onCheckedChange={state =>
-                  toogleSelectionAll(typeof state === 'string' ? false : state)
-                }
-              />
-              <label
-                className="text-muted-foreground cursor-pointer"
-                htmlFor="all-users-selection"
-              >
-                {selection.size > 0 ? `Unselect all` : `Select all`}
-              </label>
+        {selection && (
+          <div className="flex justify-start items-center gap-4">
+            <div className="flex flex-col gap-0">
+              <div className="flex gap-2 justify-start items-center">
+                {toogleSelectionAll && (
+                  <Checkbox
+                    checked={selection.size > 0}
+                    id="all-users-selection"
+                    onCheckedChange={state =>
+                      toogleSelectionAll(
+                        typeof state === 'string' ? false : state
+                      )
+                    }
+                  />
+                )}
+                <label
+                  className="text-muted-foreground cursor-pointer"
+                  htmlFor="all-users-selection"
+                >
+                  {selection.size > 0 ? `Unselect all` : `Select all`}
+                </label>
+              </div>
+              {data && (
+                <p>{`${selection.size} of ${data.length} user(s) selected.`}</p>
+              )}
             </div>
-            {data && (
-              <p>{`${selection.size} of ${data.length} user(s) selected.`}</p>
+            {selection.size > 0 && (
+              <Button
+                variant="destructive"
+                onClick={() => deleteOrders(Array.from(selection))}
+              >
+                Delete selected users
+              </Button>
             )}
           </div>
-          {selection.size > 0 && (
+        )}
+        {currentPage && pageCount && (
+          <div className={cn('flex justify-start items-center gap-2')}>
             <Button
-              variant="destructive"
-              onClick={() => deleteOrders(Array.from(selection))}
+              disabled={currentPage === 0}
+              size="icon"
+              variant="outline"
+              onClick={firstPage}
             >
-              Delete selected users
+              <DoubleArrowLeftIcon className="size-4" />
             </Button>
-          )}
-        </div>
-        <div className={cn('flex justify-start items-center gap-2')}>
-          <Button
-            disabled={currentPage === 0}
-            size="icon"
-            variant="outline"
-            onClick={firstPage}
-          >
-            <DoubleArrowLeftIcon className="size-4" />
-          </Button>
-          <Button
-            disabled={currentPage === 0}
-            size="icon"
-            variant="outline"
-            onClick={previousPage}
-          >
-            <ChevronLeftIcon className="size-4" />
-          </Button>
-          <div className="text-muted-foreground">
-            {`Page ${currentPage} of ${pageCount}`}
+            <Button
+              disabled={currentPage === 0}
+              size="icon"
+              variant="outline"
+              onClick={previousPage}
+            >
+              <ChevronLeftIcon className="size-4" />
+            </Button>
+            <div className="text-muted-foreground">
+              {`Page ${currentPage} of ${pageCount}`}
+            </div>
+            <Button
+              disabled={currentPage >= pageCount}
+              size="icon"
+              variant="outline"
+              onClick={nextPage}
+            >
+              <ChevronRightIcon className="size-4" />
+            </Button>
+            <Button
+              disabled={currentPage >= pageCount}
+              size="icon"
+              variant="outline"
+              onClick={lastPage}
+            >
+              <DoubleArrowRightIcon className="size-4" />
+            </Button>
           </div>
-          <Button
-            disabled={currentPage >= pageCount}
-            size="icon"
-            variant="outline"
-            onClick={nextPage}
-          >
-            <ChevronRightIcon className="size-4" />
-          </Button>
-          <Button
-            disabled={currentPage >= pageCount}
-            size="icon"
-            variant="outline"
-            onClick={lastPage}
-          >
-            <DoubleArrowRightIcon className="size-4" />
-          </Button>
-        </div>
+        )}
       </div>
     </div>
   )
