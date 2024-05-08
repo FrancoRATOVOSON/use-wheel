@@ -75,15 +75,6 @@ export function useList<T, U, V extends UseListParamsType<T, U>>(
   } as any
 }
 
-export function useUseList() {
-  const result = useList([''], {
-    defaultPageSize: 5
-    // filterFn: elt => elt.length > 0
-  })
-
-  return result
-}
-
 type UseRichListType = {
   <U>(): <T, V extends UseListParamsType<T, U>>(
     dataList: Array<T>,
@@ -100,34 +91,3 @@ export const useRichList: UseRichListType = function <U>() {
     return useList(data, params)
   }
 }
-
-// export function useUseRichList() {
-//   const { selection } = useRichList<number>()([''], {
-//     getId: elt => elt.length
-//   })
-// }
-
-// export function useRichList<
-//   T,
-//   U,
-//   V extends PaginationType & SelectionType<T, U>
-// >(
-//   data: Array<T>,
-//   { defaultPageSize, getId }: V
-// ): { list: Array<T> } & ListWithPaginationAndSelection<T, U> {
-//   const selection = useListSelection(data, getId)
-//   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-//   const { index, ...pagination } = useListPagination(data, defaultPageSize || 5)
-
-//   return { ...selection, ...pagination, list: [...data] }
-// }
-
-// export function useRichList<T, V extends PaginationType>(
-//   data: Array<T>,
-//   { defaultPageSize }: V
-// ): { list: Array<T> } & ListWithPagination<T> {
-//   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-//   const { index, ...pagination } = useListPagination(data, defaultPageSize || 5)
-
-//   return { ...pagination, list: [...data] }
-// }
